@@ -107,3 +107,21 @@ export async function modifyPost(formData: FormData) {
     data,
   };
 }
+
+export async function deletePost(id: number) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("posts").delete().eq("id", id);
+
+  if (error) {
+    console.error("Error deleting post:", error);
+    return {
+      success: false,
+      error: "게시글 삭제 중 오류가 발생했습니다.",
+    };
+  }
+
+  return {
+    success: true,
+  };
+}

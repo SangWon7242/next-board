@@ -4,7 +4,7 @@ import { formatDate } from "@/app/uitils/dateForatter";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import BoardActions from "@/components/BoardActions";
+import PostActions from "@/components/PostActions";
 
 export default async function PostPage({
   params,
@@ -40,7 +40,7 @@ export default async function PostPage({
         <Button>
           <Link href={`/post/${post.id}/edit`}>수정</Link>
         </Button>
-        <BoardActions boardId={post.id} />
+        <PostActions id={post.id} />
         <Button>
           <Link href={`/post`}>목록으로</Link>
         </Button>
