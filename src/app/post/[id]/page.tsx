@@ -1,4 +1,4 @@
-import { getBoardById } from "@/app/services/BoardService";
+import { getPosts } from "@/app/actions/post";
 
 import { formatDate } from "@/app/uitils/dateForatter";
 import MarkdownViewer from "@/components/MarkdownViewer";

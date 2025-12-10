@@ -13,7 +13,7 @@ export default function Header() {
               <Link href={"/todo-list"}>TodoList</Link>
             </li>
             <li>
-              <Link href={"/board"}>게시판</Link>
+              <Link href={"/post"}>게시판</Link>
             </li>
             <li>
               <Link href={"/chart"}>Chart</Link>
