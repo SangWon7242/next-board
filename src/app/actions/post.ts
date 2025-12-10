@@ -2,9 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Post } from "@/app/types/post";
+import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 // 보드 리스트
 export async function getPosts(): Promise<Post[] | null> {
+  noStore();
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -21,6 +24,8 @@ export async function getPosts(): Promise<Post[] | null> {
 }
 
 export async function getPostById(id: number): Promise<Post | null> {
+  noStore();
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -37,7 +42,6 @@ export async function getPostById(id: number): Promise<Post | null> {
   return data;
 }
 
-// src/app/actions/post.ts에 추가
 export async function createPost(formData: FormData) {
   const supabase = await createClient();
 
@@ -65,6 +69,8 @@ export async function createPost(formData: FormData) {
       error: "게시글 작성 중 오류가 발생했습니다.",
     };
   }
+
+  revalidatePath("/post");
 
   return {
     success: true,
@@ -98,9 +104,12 @@ export async function modifyPost(formData: FormData) {
     console.error("Error creating post:", error);
     return {
       success: false,
-      error: "게시글 작성 중 오류가 발생했습니다.",
+      error: "게시글 수정 중 오류가 발생했습니다.",
     };
   }
+
+  revalidatePath("/post");
+  revalidatePath(`/post/${id}`);
 
   return {
     success: true,
@@ -120,6 +129,8 @@ export async function deletePost(id: number) {
       error: "게시글 삭제 중 오류가 발생했습니다.",
     };
   }
+
+  revalidatePath("/post");
 
   return {
     success: true,
