@@ -1,13 +1,13 @@
 "use client";
-import { getBoardById } from "@/app/services/BoardService";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import { getPostById } from "@/app/actions/post";
 
 export default function BoardActions({ boardId }: { boardId: number }) {
   const router = useRouter();
   const Swal = require("sweetalert2");
   const handleDelete = async () => {
-    const board = await getBoardById(boardId);
+    const board = await getPostById(boardId);
     if (!board) {
       Swal.fire({
         title: "Error!",
@@ -24,7 +24,7 @@ export default function BoardActions({ boardId }: { boardId: number }) {
       icon: "success",
       confirmButtonText: "확인",
     });
-    router.push("/board");
+    router.push("/post");
   };
   return (
     <div>

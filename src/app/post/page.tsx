@@ -23,7 +23,7 @@ export default async function PostPage() {
           </li>
           {posts?.map((post) => (
             <li key={post.id} className="grid grid-cols-2 p-2 border-b">
-              <Link href={`/board/${post.id}`}>{post.title}</Link>
+              <Link href={`/post/${post.id}`}>{post.title}</Link>
               <p>{formatDate(post.created_at)}</p>
             </li>
           ))}
