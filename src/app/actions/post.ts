@@ -71,3 +71,39 @@ export async function createPost(formData: FormData) {
     data,
   };
 }
+
+export async function modifyPost(formData: FormData) {
+  const supabase = await createClient();
+
+  const id = formData.get("id") as string;
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+
+  // 유효성 검사
+  if (!title?.trim() || !content?.trim()) {
+    return {
+      success: false,
+      error: "제목과 내용을 입력해주세요.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("posts")
+    .update({ title, content })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating post:", error);
+    return {
+      success: false,
+      error: "게시글 작성 중 오류가 발생했습니다.",
+    };
+  }
+
+  return {
+    success: true,
+    data,
+  };
+}

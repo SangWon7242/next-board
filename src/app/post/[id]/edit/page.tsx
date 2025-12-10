@@ -1,25 +1,28 @@
-import { getBoardById } from "@/app/services/BoardService";
-import EditBtn from "./EditBtn";
+import { getPostById } from "@/app/actions/post";
+import EditForm from "./EditForm";
 
 export default async function EditPage({
   params,
 }: {
-  params: Promise<{ boardId: number }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { boardId } = await params;
-  const board = await getBoardById(boardId);
+  const { id } = await params;
+  const paramId = parseInt(id, 10);
 
-  if (!board) {
-    return <div>게시글을 찾을 수 없습니다</div>;
+  // 잘못된 ID 형식
+  if (isNaN(paramId)) {
+    return <div>인증 정보가 올바르지 않습니다.</div>;
+  }
+
+  const post = await getPostById(paramId);
+
+  if (!post) {
+    return <div>해당 데이터가 존재하지 않습니다.</div>;
   }
 
   return (
     <div>
-      <EditBtn
-        boardId={board.id}
-        editTitle={board.title}
-        editContent={board.content}
-      />
+      <EditForm post={post} />
     </div>
   );
 }
