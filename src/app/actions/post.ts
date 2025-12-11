@@ -47,6 +47,7 @@ export async function createPost(formData: FormData) {
 
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
+  const thumbnail_url = formData.get("thumbnail_url") as File | string | null;
 
   // 유효성 검사
   if (!title?.trim() || !content?.trim()) {
@@ -58,7 +59,7 @@ export async function createPost(formData: FormData) {
 
   const { data, error } = await supabase
     .from("posts")
-    .insert({ title, content })
+    .insert({ title, content, thumbnail_url })
     .select()
     .single();
 

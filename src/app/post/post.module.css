@@ -22,7 +22,7 @@
   gap: 1rem;
 }
 
-.post-id {
+.post-thumbnail {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,6 +33,7 @@
   border-radius: 10px;
   font-weight: 700;
   color: rgb(255, 245, 245);
+  object-fit: cover;
 
   @media (1100px >= width) {
     font-size: 2.725vw;

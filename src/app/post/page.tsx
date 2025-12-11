@@ -5,6 +5,8 @@ import { formatDate } from "@/app/uitils/dateForatter";
 import { getPosts } from "@/app/actions/post";
 import styles from "./post.module.css";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default async function PostPage() {
   const posts = await getPosts();
@@ -33,7 +35,13 @@ export default async function PostPage() {
                     </Badge>
                     <p className="font-bold">{post.title}</p>
                   </div>
-                  <div className={styles["post-id"]}>POST {post.id}</div>
+                  <div className={styles["post-thumbnail"]}>
+                    {post.thumbnail ? (
+                      <Image src={post.thumbnail as string} alt="thumbnail" />
+                    ) : (
+                      post.id
+                    )}
+                  </div>
                   <div className={styles["post-info"]}>
                     <div className={styles["profile-img"]}>^__^</div>
                     <div className="profile-info">
@@ -50,6 +58,9 @@ export default async function PostPage() {
             ))}
           </ul>
         </nav>
+        <Button className="self-start">
+          <Link href="/post/write">글쓰기</Link>
+        </Button>
       </div>
     </section>
   );

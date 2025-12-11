@@ -10,10 +10,12 @@ import { IMAGE } from "@/app/constants/images";
 import { Input } from "@/components/ui/input";
 import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
+import ThumbnailUpload from "@/app/components/post/ThumbnailUpload";
 
 export default function WritePage() {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
   const Swal = require("sweetalert2");
   const router = useRouter();
@@ -34,17 +36,25 @@ export default function WritePage() {
       formData.append("title", title);
       formData.append("content", content);
 
+      // 썸네일이 있으면 추가
+      if (thumbnail) {
+        formData.append("thumbnail_url", thumbnail);
+      }
+
       const { success, error, data } = await createPost(formData);
 
       if (success) {
         setTitle("");
         setContent("");
+        setThumbnail(null);
+
         Swal.fire({
           title: "성공!",
           text: `${data.id}번 게시물 작성`,
           icon: "success",
           confirmButtonText: "확인",
         });
+
         router.push(`/post/${data.id}`);
       } else {
         Swal.fire({
@@ -73,6 +83,7 @@ export default function WritePage() {
           onSubmit={handleSubmit}
           className="flex flex-col gap-2"
         >
+          <ThumbnailUpload onThumbnailChange={setThumbnail} />
           <Input
             name="title"
             value={title}
