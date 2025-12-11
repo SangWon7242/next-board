@@ -47,7 +47,7 @@ export async function createPost(formData: FormData) {
 
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
-  const thumbnail_url = formData.get("thumbnail_url") as File | string | null;
+  const thumbnailFile = formData.get("thumbnail_url") as File | null;
 
   // 유효성 검사
   if (!title?.trim() || !content?.trim()) {
@@ -55,6 +55,39 @@ export async function createPost(formData: FormData) {
       success: false,
       error: "제목과 내용을 입력해주세요.",
     };
+  }
+
+  let thumbnail_url = null;
+
+  // 썸네일 파일이 있으면 Supabase Storage에 업로드
+  if (thumbnailFile && thumbnailFile instanceof File) {
+    const fileExt = thumbnailFile.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExt}`;
+    const filePath = `thumbnails/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("posts") // 버킷 이름 (Supabase에서 생성 필요)
+      .upload(filePath, thumbnailFile, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Error uploading thumbnail:", uploadError);
+      return {
+        success: false,
+        error: "썸네일 업로드 중 오류가 발생했습니다.",
+      };
+    }
+
+    // 업로드된 파일의 공개 URL 가져오기
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("posts").getPublicUrl(filePath);
+
+    thumbnail_url = publicUrl;
   }
 
   const { data, error } = await supabase
