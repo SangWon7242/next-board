@@ -36,12 +36,13 @@ export default async function PostPage() {
                     <p className="font-bold">{post.title}</p>
                   </div>
                   <div className={styles["post-thumbnail"]}>
-                    {post.thumbnail_url ? (
+                    {post.thumbnail_url &&
+                    post.thumbnail_url.startsWith("http") ? (
                       <Image
                         src={post.thumbnail_url}
                         alt="thumbnail"
-                        width={100}
-                        height={100}
+                        width={300}
+                        height={300}
                       />
                     ) : (
                       post.id

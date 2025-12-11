@@ -33,7 +33,13 @@
   border-radius: 10px;
   font-weight: 700;
   color: rgb(255, 245, 245);
-  object-fit: cover;
+  overflow: hidden;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+    aspect-ratio: 1;
+  }
 
   @media (1100px >= width) {
     font-size: 2.725vw;
