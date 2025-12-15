@@ -15,7 +15,7 @@ import ThumbnailUpload from "@/app/components/post/ThumbnailUpload";
 export default function WritePage() {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | string | null>(null);
   const [isPending, startTransition] = useTransition();
   const Swal = require("sweetalert2");
   const router = useRouter();

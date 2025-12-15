@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Post } from "@/app/types/post";
+import { nanoid } from "nanoid";
 import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 // 보드 리스트
@@ -47,29 +48,30 @@ export async function createPost(formData: FormData) {
 
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
-  const thumbnailFile = formData.get("thumbnail_url") as File | null;
+  const thumbnail = formData.get("thumbnail_url") as File | string | null;
 
   // 유효성 검사
-  if (!title?.trim() || !content?.trim()) {
+  if (!title?.trim() || !content?.trim() || !thumbnail) {
     return {
       success: false,
-      error: "제목과 내용을 입력해주세요.",
+      error: "제목과 내용과 썸네일을 입력해주세요.",
     };
   }
 
-  let thumbnail_url = null;
+  // 파일 업로드 시, Supabase의 Storage 즉, bucket 폴더에 이미지를 먼저 업로드 한 후,
+  // 이미지가 저장된 bucket 폴더의 경로 URL 주소를 우리가 관리하고 있는
+  // post 테이블 thumnail 컬럼에 문자열 형태, 즉 string 타입(DB에서는 Text 타입)으로 저장
 
-  // 썸네일 파일이 있으면 Supabase Storage에 업로드
-  if (thumbnailFile && thumbnailFile instanceof File) {
-    const fileExt = thumbnailFile.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2)}.${fileExt}`;
+  let thumbnailUrl: string | null = null;
+  if (thumbnail && thumbnail instanceof File) {
+    // 파일이 있는 경우
+    const fileExt = thumbnail.name.split(".").pop();
+    const fileName = `${nanoid()}.${fileExt}`;
     const filePath = `thumbnails/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("posts") // 버킷 이름 (Supabase에서 생성 필요)
-      .upload(filePath, thumbnailFile, {
+      .upload(filePath, thumbnail, {
         cacheControl: "3600",
         upsert: false,
       });
@@ -83,16 +85,21 @@ export async function createPost(formData: FormData) {
     }
 
     // 업로드된 파일의 공개 URL 가져오기
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("posts").getPublicUrl(filePath);
+    const { data } = supabase.storage.from("posts").getPublicUrl(filePath);
 
-    thumbnail_url = publicUrl;
+    if (!data) {
+      return {
+        success: false,
+        error: "썸네일 URL 생성 중 오류가 발생했습니다.",
+      };
+    }
+
+    thumbnailUrl = data.publicUrl;
   }
 
   const { data, error } = await supabase
     .from("posts")
-    .insert({ title, content, thumbnail_url })
+    .insert({ title, content, thumbnail_url: thumbnailUrl })
     .select()
     .single();
 

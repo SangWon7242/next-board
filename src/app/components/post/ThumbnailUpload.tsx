@@ -4,9 +4,11 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 
 interface ThumbnailUploadProps {
-  onThumbnailChange: (file: File | null) => void;
+  // 타입이 3개인 이유는 처음 파일 업로드시 타입이 파일임
+  onThumbnailChange: (file: File | string | null) => void;
 }
 
 export default function ThumbnailUpload({
@@ -17,8 +19,6 @@ export default function ThumbnailUpload({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-
-    console.log(e.target.files);
 
     if (file) {
       // 이미지 파일인지 확인
@@ -33,14 +33,15 @@ export default function ThumbnailUpload({
         return;
       }
 
-      // 미리보기 생성
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-
+      // 이전 blob URL이 있으면 해제 (메모리 누수 방지)
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+      // 미리보기 생성 (blob URL 방식)
+      const blobUrl = URL.createObjectURL(file);
+      setPreview(blobUrl);
       setFileName(file.name);
+
       onThumbnailChange(file);
     }
   };
@@ -87,10 +88,12 @@ export default function ThumbnailUpload({
       ) : (
         <div className="relative">
           <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-            <img
+            <Image
               src={preview}
               alt="썸네일 미리보기"
-              className="w-full h-full object-contain"
+              className="object-contain"
+              fill
+              unoptimized
             />
           </div>
           <div className="mt-3 flex items-center justify-between">
