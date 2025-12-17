@@ -67,12 +67,14 @@ const SignUpPage = () => {
       const supabase = createClient();
 
       // 회원가입 API 호출 - 실제 폼에서 입력받은 이메일과 비밀번호 사용
-      const { data, error } = await supabase.auth.signUp({
+      const { data: userData, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password,
       });
 
       if (error) {
+        console.log(error);
+
         Swal.fire({
           title: "회원가입 실패",
           text: error.message,
@@ -85,16 +87,35 @@ const SignUpPage = () => {
       }
 
       // 회원가입 성공 처리
-      if (data.user) {
-        // 즉시 로그인된 경우 (이메일 확인이 비활성화된 경우)
-        await Swal.fire({
-          title: "회원가입 완료!",
-          text: "회원가입이 완료되었습니다.",
-          icon: "success",
-          confirmButtonText: "확인",
-        });
+      console.log("data : ", userData);
+      if (userData.user) {
+        const { data, error } = await supabase
+          .from("user")
+          .insert([{ id: userData.user.id, email: userData.user.email }])
+          .select();
 
-        router.push("/");
+        if (data) {
+          await Swal.fire({
+            title: "회원가입 완료!",
+            text: "회원가입이 완료되었습니다.",
+            icon: "success",
+            confirmButtonText: "확인",
+          });
+
+          router.push("/signin");
+        }
+
+        if (error) {
+          console.log("error : ", error);
+          await Swal.fire({
+            title: "회원가입 실패",
+            text: error.message,
+            icon: "error",
+            confirmButtonText: "확인",
+          });
+          setErrors({ email: error.message });
+          return;
+        }
       }
     });
   };
