@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { ArrowLeft } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 // Zod 스키마 정의
 const signUpSchema = z
@@ -37,6 +38,7 @@ const SignUpPage = () => {
   >({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const Swal = require("sweetalert2");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,9 +64,38 @@ const SignUpPage = () => {
     }
 
     startTransition(async () => {
-      // TODO: 회원가입 API 호출
-      console.log("회원가입 시도:", { email, password });
-      // 회원가입 성공 후 처리
+      const supabase = createClient();
+
+      // 회원가입 API 호출 - 실제 폼에서 입력받은 이메일과 비밀번호 사용
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        Swal.fire({
+          title: "회원가입 실패",
+          text: error.message,
+          icon: "error",
+          confirmButtonText: "확인",
+        });
+
+        setErrors({ email: error.message });
+        return;
+      }
+
+      // 회원가입 성공 처리
+      if (data.user) {
+        // 즉시 로그인된 경우 (이메일 확인이 비활성화된 경우)
+        await Swal.fire({
+          title: "회원가입 완료!",
+          text: "회원가입이 완료되었습니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+        });
+
+        router.push("/");
+      }
     });
   };
 
