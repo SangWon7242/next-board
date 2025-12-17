@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { ArrowLeft } from "lucide-react";
 
 // Zod 스키마 정의
@@ -79,79 +79,47 @@ const SignUpPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              이메일
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="이메일을 입력하세요"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) {
-                  setErrors((prev) => ({ ...prev, email: undefined }));
-                }
-              }}
-              disabled={isPending}
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
-            )}
-          </div>
+          <FormField
+            id="email"
+            label="이메일"
+            type="email"
+            placeholder="이메일을 입력하세요"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
+            disabled={isPending}
+            onClearError={() =>
+              setErrors((prev) => ({ ...prev, email: undefined }))
+            }
+          />
 
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              비밀번호
-            </label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) {
-                  setErrors((prev) => ({ ...prev, password: undefined }));
-                }
-              }}
-              disabled={isPending}
-              aria-invalid={!!errors.password}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password}</p>
-            )}
-          </div>
+          <FormField
+            id="password"
+            label="비밀번호"
+            type="password"
+            placeholder="비밀번호를 입력하세요"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={errors.password}
+            disabled={isPending}
+            onClearError={() =>
+              setErrors((prev) => ({ ...prev, password: undefined }))
+            }
+          />
 
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-medium">
-              비밀번호 확인
-            </label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="비밀번호를 다시 입력하세요"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (errors.confirmPassword) {
-                  setErrors((prev) => ({
-                    ...prev,
-                    confirmPassword: undefined,
-                  }));
-                }
-              }}
-              disabled={isPending}
-              aria-invalid={!!errors.confirmPassword}
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
+          <FormField
+            id="confirmPassword"
+            label="비밀번호 확인"
+            type="password"
+            placeholder="비밀번호를 다시 입력하세요"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            error={errors.confirmPassword}
+            disabled={isPending}
+            onClearError={() =>
+              setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+            }
+          />
 
           <div className="space-y-3 pt-4 flex gap-3">
             <Button
