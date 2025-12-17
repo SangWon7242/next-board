@@ -3,40 +3,61 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+
+// Zod 스키마 정의
+const signUpSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "이메일을 입력해주세요.")
+      .email("올바른 이메일 형식을 입력해주세요."),
+    password: z
+      .string()
+      .min(1, "비밀번호를 입력해주세요.")
+      .min(6, "비밀번호는 최소 6자 이상이어야 합니다."),
+    confirmPassword: z.string().min(1, "비밀번호 확인을 입력해주세요."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "비밀번호가 일치하지 않습니다.",
+    path: ["confirmPassword"],
+  });
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUpPage = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof SignUpFormData, string>>
+  >({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
-    // 유효성 검사
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      alert("모든 필드를 입력해주세요.");
-      return;
-    }
+    // Zod 유효성 검사
+    const result = signUpSchema.safeParse({
+      email,
+      password,
+      confirmPassword,
+    });
 
-    if (password !== confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    if (password.length < 6) {
-      alert("비밀번호는 최소 6자 이상이어야 합니다.");
-      return;
-    }
-
-    // 이메일 형식 검사
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      alert("올바른 이메일 형식을 입력해주세요.");
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof SignUpFormData, string>> = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof SignUpFormData;
+        if (field) {
+          fieldErrors[field] = issue.message;
+        }
+      });
+      setErrors(fieldErrors);
       return;
     }
 
@@ -67,10 +88,18 @@ const SignUpPage = () => {
               type="email"
               placeholder="이메일을 입력하세요"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) {
+                  setErrors((prev) => ({ ...prev, email: undefined }));
+                }
+              }}
               disabled={isPending}
-              required
+              aria-invalid={!!errors.email}
             />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -82,10 +111,18 @@ const SignUpPage = () => {
               type="password"
               placeholder="비밀번호를 입력하세요"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) {
+                  setErrors((prev) => ({ ...prev, password: undefined }));
+                }
+              }}
               disabled={isPending}
-              required
+              aria-invalid={!!errors.password}
             />
+            {errors.password && (
+              <p className="text-sm text-destructive">{errors.password}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -97,10 +134,23 @@ const SignUpPage = () => {
               type="password"
               placeholder="비밀번호를 다시 입력하세요"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errors.confirmPassword) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    confirmPassword: undefined,
+                  }));
+                }
+              }}
               disabled={isPending}
-              required
+              aria-invalid={!!errors.confirmPassword}
             />
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           <div className="space-y-3 pt-4 flex gap-3">
