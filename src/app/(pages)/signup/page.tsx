@@ -66,6 +66,29 @@ const SignUpPage = () => {
     startTransition(async () => {
       const supabase = createClient();
 
+      // user 테이블에 회원 정보 조회
+      const { data: oldData, error: userError } = await supabase
+        .from("user")
+        .select("*")
+        .eq("email", email.trim());
+
+      if (userError) {
+        console.log("userError : ", userError);
+        return;
+      }
+
+      if (oldData) {
+        Swal.fire({
+          title: "회원가입 실패",
+          text: "이미 등록된 이메일입니다.",
+          icon: "error",
+          confirmButtonText: "확인",
+        });
+
+        setErrors({ email: "이미 등록된 이메일입니다." });
+        return;
+      }
+
       // 회원가입 API 호출 - 실제 폼에서 입력받은 이메일과 비밀번호 사용
       const { data: userData, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -89,6 +112,7 @@ const SignUpPage = () => {
       // 회원가입 성공 처리
       console.log("data : ", userData);
       if (userData.user) {
+        // user 테이블에 회원 정보 등록
         const { data, error } = await supabase
           .from("user")
           .insert([{ id: userData.user.id, email: userData.user.email }])
