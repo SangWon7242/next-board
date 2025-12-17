@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { Todo } from "@/app/types/todo";
+import { Todo } from "@/app/types/Todo";
 
 // 모든 투두 가져오기
 export async function getTodos(): Promise<Todo[]> {

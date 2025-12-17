@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { getUserByEmail, signUp, createUser } from "@/app/actions/user";
 
 // Zod 스키마 정의
 const signUpSchema = z
@@ -64,20 +64,9 @@ const SignUpPage = () => {
     }
 
     startTransition(async () => {
-      const supabase = createClient();
+      const oldUser = await getUserByEmail(email);
 
-      // user 테이블에 회원 정보 조회
-      const { data: oldData, error: userError } = await supabase
-        .from("user")
-        .select("*")
-        .eq("email", email.trim());
-
-      if (userError) {
-        console.log("userError : ", userError);
-        return;
-      }
-
-      if (oldData) {
+      if (oldUser) {
         Swal.fire({
           title: "회원가입 실패",
           text: "이미 등록된 이메일입니다.",
@@ -89,11 +78,8 @@ const SignUpPage = () => {
         return;
       }
 
-      // 회원가입 API 호출 - 실제 폼에서 입력받은 이메일과 비밀번호 사용
-      const { data: userData, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password,
-      });
+      // auth 테이블에 회원 정보 등록
+      const { data: userData, error } = await signUp(email, password);
 
       if (error) {
         console.log(error);
@@ -110,13 +96,12 @@ const SignUpPage = () => {
       }
 
       // 회원가입 성공 처리
-      console.log("data : ", userData);
       if (userData.user) {
         // user 테이블에 회원 정보 등록
-        const { data, error } = await supabase
-          .from("user")
-          .insert([{ id: userData.user.id, email: userData.user.email }])
-          .select();
+        const data = await createUser(
+          userData.user.id as string,
+          userData.user.email as string
+        );
 
         if (data) {
           await Swal.fire({
@@ -127,18 +112,6 @@ const SignUpPage = () => {
           });
 
           router.push("/signin");
-        }
-
-        if (error) {
-          console.log("error : ", error);
-          await Swal.fire({
-            title: "회원가입 실패",
-            text: error.message,
-            icon: "error",
-            confirmButtonText: "확인",
-          });
-          setErrors({ email: error.message });
-          return;
         }
       }
     });
