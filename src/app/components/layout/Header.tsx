@@ -21,6 +21,12 @@ export default function Header() {
             <li>
               <Link href={"/description"}>제작 설명</Link>
             </li>
+            <li>
+              <Link href={"/signin"}>로그인</Link>
+            </li>
+            <li>
+              <Link href={"/signup"}>회원가입</Link>
+            </li>
           </ul>
         </div>
       </nav>
