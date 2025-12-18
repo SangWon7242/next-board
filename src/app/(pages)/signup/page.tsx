@@ -7,8 +7,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { ArrowLeft } from "lucide-react";
-import { getUserByEmail, signUp, createUser } from "@/app/actions/user";
-
+import { getUserByEmail, signUp } from "@/app/actions/user";
+import Swal from "sweetalert2";
 // Zod 스키마 정의
 const signUpSchema = z
   .object({
@@ -38,7 +38,6 @@ const SignUpPage = () => {
   >({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const Swal = require("sweetalert2");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -77,42 +76,31 @@ const SignUpPage = () => {
         setErrors({ email: "이미 등록된 이메일입니다." });
         return;
       }
-
       // auth 테이블에 회원 정보 등록
-      const { data: userData, error } = await signUp(email, password);
+      const user = await signUp(email, password);
 
-      if (error) {
-        console.log(error);
-
+      if (user.error) {
         Swal.fire({
           title: "회원가입 실패",
-          text: error.message,
+          text: user.error.message,
           icon: "error",
           confirmButtonText: "확인",
         });
 
-        setErrors({ email: error.message });
+        setErrors({ email: user.error.message });
         return;
       }
 
       // 회원가입 성공 처리
-      if (userData.user) {
-        // user 테이블에 회원 정보 등록
-        const data = await createUser(
-          userData.user.id as string,
-          userData.user.email as string
-        );
+      if (user) {
+        await Swal.fire({
+          title: "회원가입 완료!",
+          text: "회원가입이 완료되었습니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+        });
 
-        if (data) {
-          await Swal.fire({
-            title: "회원가입 완료!",
-            text: "회원가입이 완료되었습니다.",
-            icon: "success",
-            confirmButtonText: "확인",
-          });
-
-          router.push("/signin");
-        }
+        router.push("/signin");
       }
     });
   };
